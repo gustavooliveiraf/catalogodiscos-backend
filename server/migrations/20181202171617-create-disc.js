@@ -1,3 +1,4 @@
+const Disc = require('../models').Disc;
 'use strict';
 module.exports = {
   up: (queryInterface, Sequelize) => {
@@ -20,7 +21,15 @@ module.exports = {
         allowNull: false,
         type: Sequelize.DATE
       }
-    });
+    }).then(function () {
+      Disc.create({
+        name: 'The Beatles'
+      });
+
+      Disc.create({
+        name: 'Roberto Carlos'
+      });
+    })
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.dropTable('Discs');
