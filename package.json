@@ -1,0 +1,30 @@
+{
+  "name": "catalogodiscos-backend",
+  "version": "1.0.0",
+  "description": "Back-end",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon ./bin/www",
+    "start": "node ./bin/www",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Gustavo Oliveira",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.5",
+    "express": "^4.16.4",
+    "jsonwebtoken": "^8.4.0",
+    "morgan": "^1.9.1",
+    "node-uid": "^0.1.3",
+    "nodemailer": "^4.7.0",
+    "pg": "^7.7.1",
+    "pg-hstore": "^2.3.2",
+    "sequelize": "^4.41.2"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.7",
+    "sequelize-cli": "^5.4.0"
+  }
+}
