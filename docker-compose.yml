@@ -2,11 +2,11 @@ version: "3.1"
 
 services:
   catalogodiscos:
-    image: oliveiragustavo/catalogodiscos:3.0
+    image: oliveiragustavo/front-production:1.0
     ports:
     - "8080:8080"
 
   catalogodiscosback:
-    image: oliveiragustavo/catalogodiscos-back:3.0
+    image: oliveiragustavo/back-production:1.0
     ports:
     - "8000:8000"
