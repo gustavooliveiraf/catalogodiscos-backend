@@ -1,18 +1,27 @@
 const Collection = require('../models').Collection;
 
+const upload = require('../services/multer');
+const singleUpload = upload.single('image')
+
 module.exports = {
   create(req, res) {
-    return Collection
-      .create({
-          name: req.body.name,
-          description: req.body.description,
-          url: req.body.url
-      })
-      .then(collection => res.status(201).send(collection))
-      .catch(error => {
-        console.log(error)
-        return res.status(400).send({ error: 'Todos os campos são obrigatórios, verifique se estão definidos com as fk\'s povoadas na base.' })
-      })
+    singleUpload(req, res, function(err, some) {
+      if (err) return res.status(422).send({errors: [{title: 'Image Upload Error', detail: err.message}] });
+
+      var collection = JSON.parse(req.body.collection)
+
+      return Collection
+        .create({
+            name: collection.name,
+            description: collection.description,
+            url: req.file.location
+        })
+        .then(collection => res.status(201).send(collection))
+        .catch(error => {
+          console.log(error)
+          return res.status(400).send({ error: 'Todos os campos são obrigatórios, verifique se estão definidos com as fk\'s povoadas na base.' })
+        })
+    });
   },
 
   list(req, res) {
