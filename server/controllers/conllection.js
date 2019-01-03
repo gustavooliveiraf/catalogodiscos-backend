@@ -3,6 +3,13 @@ const Collection = require('../models').Collection;
 const upload = require('../services/multer');
 const singleUpload = upload.single('image')
 
+var AWS = require('aws-sdk');
+
+var credentials = new AWS.SharedIniFileCredentials({profile: 'default'});
+AWS.config.credentials = credentials;
+
+const s3 = new AWS.S3();
+
 module.exports = {
   create(req, res) {
     singleUpload(req, res, function(err, some) {
@@ -14,7 +21,7 @@ module.exports = {
         .create({
             name: collection.name,
             description: collection.description,
-            url: req.file.location
+            url: req.file.key
         })
         .then(collection => res.status(201).send(collection))
         .catch(error => {
@@ -29,7 +36,28 @@ module.exports = {
       .findAll({
         order:[['name', 'ASC']]
       })
-      .then(collections => res.status(200).send(collections))
+      .then(collections => {
+        getObject = (collection) => {
+          return new Promise((resolve,reject) => {
+            var params = { Bucket: 'gof-initial-test', Key: collection.url };
+            s3.getObject(params, function (err, data) {
+              if (err) console.log(err.message);
+        
+              collection.url = 'data:image/jpeg;base64,' + data.Body.toString('base64')
+              resolve()
+            })
+          })
+        }
+
+        async function asyncForEach(collections) {
+          for (let item of collections) {
+            await getObject(item);
+          }
+          return res.status(200).send(collections)
+        }
+    
+        asyncForEach(collections)
+      })
       .catch(error => res.status(400).send(error))
   },
 

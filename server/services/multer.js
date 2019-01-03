@@ -12,13 +12,13 @@ const upload = multer({
   storage: multerS3({
     s3: s3,
     bucket: 'gof-initial-test',
-    contentType: multerS3.AUTO_CONTENT_TYPE,
+    // contentType: multerS3.AUTO_CONTENT_TYPE,
     acl: 'public-read',
     metadata: function (req, file, cb) {
       cb(null, {fieldName: file.fieldname});
     },
     key: function (req, file, cb) {
-      cb(null, file.originalname)
+      cb(null, Date.now().toString())
     }
   })
 })
