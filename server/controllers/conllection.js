@@ -1,17 +1,11 @@
 const Collection = require('../models').Collection;
-
-const upload = require('../services/multer');
-const singleUpload = upload.single('image')
-
-var AWS = require('aws-sdk');
-
-var credentials = new AWS.SharedIniFileCredentials({profile: 'default'});
-AWS.config.credentials = credentials;
-
-const s3 = new AWS.S3();
+const methodsS3 = require('../services/methodsS3');
 
 module.exports = {
   create(req, res) {
+    const upload = methodsS3.createOrUpdateObject(Date.now().toString())
+    const singleUpload = upload.single('image')
+
     singleUpload(req, res, function(err, some) {
       if (err) return res.status(422).send({errors: [{title: 'Image Upload Error', detail: err.message}] });
 
@@ -37,39 +31,39 @@ module.exports = {
         order:[['name', 'ASC']]
       })
       .then(collections => {
-        getObject = (collection) => {
-          return new Promise((resolve,reject) => {
-            var params = { Bucket: 'gof-initial-test', Key: collection.url };
-            s3.getObject(params, function (err, data) {
-              if (err) console.log(err.message);
-        
-              collection.url = 'data:image/jpeg;base64,' + data.Body.toString('base64')
-              resolve()
-            })
-          })
-        }
-
         async function asyncForEach(collections) {
-          for (let item of collections) {
-            await getObject(item);
+          for (let collection of collections) {
+            try {
+              collection.url = await methodsS3.getObject(collection.url)
+            } catch (res) {
+              console.log(res)
+              continue
+            }
           }
           return res.status(200).send(collections)
         }
     
-        asyncForEach(collections)
+        return asyncForEach(collections)
       })
       .catch(error => res.status(400).send(error))
   },
 
   delete(req, res) {
     return Collection
-      .destroy({
+    .find({where: { id: req.params.id } })
+    .then(collection => {
+      return Collection.destroy({
         where: {
           id: req.params.id
         }
       })
-      .then(resp => res.status(200).json(resp))
-      .catch(error => res.status(400).send(error));
+      .then(async (resp) => {
+        await methodsS3.deleteObject(collection.url)
+
+        return res.status(200).json(resp)
+      })
+    })
+    .catch(error => res.status(400).send(error));
   },
 
   getCollection(req, res) {
@@ -79,13 +73,30 @@ module.exports = {
       .catch(error => res.status(400).send(error));
   },
 
+  // https://github.com/expressjs/multer/issues/150 https://github.com/expressjs/multer/issues/632
   update(req, res) {
-    return Collection
-      .update (
-        {name: req.body.name, description: req.body.description, url: req.body.url},
-        {where: { id: req.body.id }}
-      )
-      .then(resp => res.status(200).send(resp))
+    const upload = methodsS3.createOrUpdateObject(Date.now().toString())
+    const singleUpload = upload.single('image')
+
+    singleUpload(req, res, function(err, data) {
+      var collectionReq = JSON.parse(req.body.collection)
+
+      return Collection
+      .find({where: { id: collectionReq.id } })
+      .then(async (collection) => {
+        try {
+          await methodsS3.deleteObject(collectionReq.url)
+        } catch (res) {
+          console.log(collection)
+        }
+
+        return Collection.update (
+          {name: collectionReq.name, description: collectionReq.description, url: req.file.key},
+          {where: { id: collectionReq.id }}
+        )
+        .then(resp => res.status(200).send(resp) )
+      })
       .catch(error => res.status(400).send(error));
+    })
   }
 }

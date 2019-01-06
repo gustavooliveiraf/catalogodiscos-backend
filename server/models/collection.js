@@ -6,7 +6,6 @@ module.exports = (sequelize, DataTypes) => {
     url: DataTypes.STRING
   }, {});
   Collection.associate = function(models) {
-    // associations can be defined here
   };
   return Collection;
 };

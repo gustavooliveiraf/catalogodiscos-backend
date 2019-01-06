@@ -5,7 +5,6 @@ module.exports = (sequelize, DataTypes) => {
     collectionId: DataTypes.INTEGER
   }, {});
   CollectionDisc.associate = function(models) {
-    // associations can be defined here
   };
   return CollectionDisc;
 };
