@@ -1,9 +1,9 @@
 {
   "development": {
-    "username": "gof",
-    "password": "casa123",
-    "database": "passeidireto",
-    "host": "web597.webfaction.com",
+    "username": "root",
+    "password": "casa1234",
+    "database": "catalogo",
+    "host": "catalogo.cf2upeoc5dph.us-east-1.rds.amazonaws.com",
     "dialect": "postgres"
   },
   "test": {
